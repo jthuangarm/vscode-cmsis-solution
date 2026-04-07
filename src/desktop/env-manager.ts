@@ -30,6 +30,8 @@ const DEFAULT_PATH_VAR = (process.platform === 'win32') ? 'Path' : 'PATH';
 export interface EnvironmentManager {
     activate(context: vscode.ExtensionContext): Promise<void>;
     augmentEnv(env: Environment | undefined): Environment;
+
+    readonly onDidChangeEnvVars: vscode.Event<void>;
 }
 
 export interface Environment {
@@ -179,6 +181,9 @@ class EnvironmentManagerImpl implements EnvironmentManager {
     private pyEnvWrapper: Optional<PythonEnvironmentExtensionWrapper> = undefined;
     private context: vscode.ExtensionContext | undefined = undefined;
 
+    private readonly envVarsChangeEmitter = new vscode.EventEmitter<void>();
+    public readonly onDidChangeEnvVars = this.envVarsChangeEmitter.event;
+
     constructor(
         private readonly configurationProvider: ConfigurationProvider,
     ) {
@@ -192,6 +197,7 @@ class EnvironmentManagerImpl implements EnvironmentManager {
 
         context.subscriptions.push(
             vscode.extensions.onDidChange(() => this.updateEnvironment(context)),
+            this.envVarsChangeEmitter,
         );
 
         this.configurationProvider.onChangeConfiguration(
@@ -243,8 +249,9 @@ class EnvironmentManagerImpl implements EnvironmentManager {
                     context.environmentVariableCollection.replace(key, value);
                 }
             }
-
         }
+        
+        this.envVarsChangeEmitter.fire();
     }
 }
 
