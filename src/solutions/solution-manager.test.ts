@@ -34,7 +34,11 @@ import { EnvironmentManager } from '../desktop/env-manager';
 import { CONFIG_ENVIRONMENT_VARIABLES } from '../manifest';
 
 
-const convertResultData: ConvertResultData = { severity: 'success', detection: false };
+const convertResultData: ConvertResultData = {
+    severity: 'success',
+    detection: false,
+    logMessages: { success: true, errors: [], warnings: [], info: [] },
+};
 
 describe('SolutionManager', () => {
     let mockActiveSolutionTracker: {
